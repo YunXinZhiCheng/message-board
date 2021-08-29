@@ -15,5 +15,10 @@
     "tailwindcss": "^2.2.8",
     "vite": "^2.5.1",
     "vue": "^3.2.6"
+  },
+  "dependencies": {
+    "@notionhq/client": "^0.3.1",
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1"
   }
 }
