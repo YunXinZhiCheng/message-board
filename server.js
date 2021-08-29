@@ -21,15 +21,7 @@ async function getAllComments() {
   const comments = new Map()
   // 原始评论数据
   result?.results?.forEach((page) => {
-    comments.set(page.id, {
-      id: page.id,
-      user: page.properties.user.rich_text[0].text.content,
-      time: getRelativeTimeDesc(page.properties.time.created_time),
-      content: page.properties.content.rich_text[0].text.content,
-      avatar: page.properties.avatar.url,
-      replies: page.properties.replies.relation,
-      replyTo: page.properties.replyTo?.relation[0]?.id,
-    })
+    comments.set(page.id, transformPageObject(page))
   })
   // 组装回复，把关系 id 替换为实际评论
   let commentsPopulated = [...comments.values()].reduce((acc, curr) => {
@@ -52,8 +44,11 @@ async function addComment({ content, replyTo = '' }) {
   let { avatar_url, name } = await notion.users.retrieve({
     user_id: NOTION_CURR_USER_ID,
   })
+  // 默认头像
+  avatar_url = "https://portrait.gitee.com/uploads/avatars/user/1675/5026491_deniel-liu_1578978723.png!avatar200"
+
   // 添加配置的请求
-  notion.request({
+ const page = await notion.request({
     method: 'POST',
     path: 'pages',
     body: {
@@ -102,6 +97,7 @@ async function addComment({ content, replyTo = '' }) {
       },
     },
   })
+  return transformPageObject(page)
 }
 
 // 发送请求: 获取留言列表
@@ -118,8 +114,8 @@ app.get('/comments', async (req, res) => {
 // 发送请求：发表留言
 app.post('/comments', async (req, res) => {
   try {
-    await addComment(req.body)
-    res.sendStatus(201)
+    const newPage = await addComment(req.body)
+    res.status(201).json(newPage)
   } catch (error) {
     console.log(error)
     res.sendStatus(500)
@@ -133,6 +129,19 @@ app.post('/comments', async (req, res) => {
 app.listen(port, () =>
   console.log(`Example app listening at http://localhost:${port}`)
 )
+
+// 优化：转换函数
+function transformPageObject(page){
+  return {
+    id: page.id,
+      user: page.properties.user.rich_text[0].text.content,
+      time: getRelativeTimeDesc(page.properties.time.created_time),
+      content: page.properties.content.rich_text[0].text.content,
+      avatar: page.properties.avatar.url,
+      replies: page.properties.replies.relation,
+      replyTo: page.properties.replyTo?.relation[0]?.id,
+  }
+}
 
 // 获取时间函数
 function getRelativeTimeDesc(time) {

@@ -78,7 +78,7 @@ onMounted(() => {
 
 // 定义发表留言和回复函数
 const addNewComment = async (content, replyTo) => {
-  await fetch(`/api/comments`, {
+  const res = await fetch(`/api/comments`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -89,11 +89,21 @@ const addNewComment = async (content, replyTo) => {
     }),
   })
 
+  // 追加新的评论
+  const newComment = await res.json()
+  if (!replyTo) {
+    // 如果回复为空
+    comments.value.unshift(newComment)
+  } else {
+    // 回复不为空
+    comments.value.find((c) => c.id === replyTo).replies.unshift(newComment)
+  }
+
   // 新增加完评论后，自动获取新的评论列表
   // Notion AIP 有延迟，所以在添加完 page 之后，需要过一会才能获取到新的评论列表
-  setTimeout(async () => {
-    await getAllComments()
-  }, 1000)
+  // setTimeout(async () => {
+  //   await getAllComments()
+  // }, 1000)
 }
 </script>
 
