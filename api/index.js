@@ -7,7 +7,7 @@ const app = express()
 app.use(express.json())
 
 // 后端的端口
-const port = 3001
+// const port = 3001
 
 // 获取env文件里的相关数据
 const NOTION_KEY = process.env.NOTION_KEY
@@ -45,7 +45,7 @@ async function addComment({ content, replyTo = '' }) {
     user_id: NOTION_CURR_USER_ID,
   })
   // 默认头像
-  avatar_url = "https://portrait.gitee.com/uploads/avatars/user/1675/5026491_deniel-liu_1578978723.png!avatar200"
+  avatar_url = "https://source.unsplash.com/random"
 
   // 添加配置的请求
  const page = await notion.request({
@@ -101,7 +101,7 @@ async function addComment({ content, replyTo = '' }) {
 }
 
 // 发送请求: 获取留言列表
-app.get('/comments', async (req, res) => {
+app.get('/api/comments', async (req, res) => {
   try {
     const comments = await getAllComments()
     res.json(comments)
@@ -112,7 +112,7 @@ app.get('/comments', async (req, res) => {
 })
 
 // 发送请求：发表留言
-app.post('/comments', async (req, res) => {
+app.post('/api/comments', async (req, res) => {
   try {
     const newPage = await addComment(req.body)
     res.status(201).json(newPage)
@@ -126,9 +126,9 @@ app.post('/comments', async (req, res) => {
 // app.get('/', (req, res) => res.send('Hello World!'))
 
 // 监听端口
-app.listen(port, () =>
-  console.log(`Example app listening at http://localhost:${port}`)
-)
+// app.listen(port, () =>
+//   console.log(`Example app listening at http://localhost:${port}`)
+// )
 
 // 优化：转换函数
 function transformPageObject(page){
@@ -169,3 +169,6 @@ function getRelativeTimeDesc(time) {
     return `${Math.ceil(relativeTime / yearInMs)} 年前`
   }
 }
+
+// 导出app
+module.exports = app;
